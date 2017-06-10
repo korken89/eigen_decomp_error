@@ -1,16 +1,20 @@
 
 #include "stm32f411xe.h"
 #include <Eigen/Dense>
+#include "linear_algebra.hpp"
 
 
 #define MSIZE 16
 using mat = Eigen::Matrix<float, MSIZE, MSIZE>;
+using matq = Eigen::Matrix<float, 2*MSIZE, MSIZE>;
 using vec = Eigen::Matrix<float, MSIZE, 1>;
 
 mat mat1;
 mat mat2;
 mat mat4;
-size_t diff;
+matq mat_qr;
+size_t diff1;
+size_t diff2;
 
 int main()
 {
@@ -19,14 +23,17 @@ int main()
   DWT->CTRL |= (1UL << DWT_CTRL_CYCCNTENA_Pos);
 
   mat1.setOnes();
-  mat1.diagonal() += vec::Ones();
-  //for (auto i = 0; i < MSIZE; i++)
-  //  mat1(i,i) += 1;
-
+  mat1 += mat::Identity();
   mat2.setOnes();
+
+  mat_qr.block<MSIZE, MSIZE>(0,0).setOnes();
+  mat_qr.block<MSIZE, MSIZE>(0,0) += mat::Identity();
+  mat_qr.block<MSIZE, MSIZE>(MSIZE,0).setIdentity();
+
   size_t now = DWT->CYCCNT;
-  mat4 = mat1 * mat2 * mat1.transpose() + mat2;
-  diff = DWT->CYCCNT - now;
+  mat4 = mat1 * mat2 * mat1.transpose() + 5.0*mat::Identity();
+  diff1 = DWT->CYCCNT - now;
+
 
   // Working
   //Eigen::LLT< Eigen::Ref<mat> > qr(mat4);
@@ -38,8 +45,11 @@ int main()
 
   // Failing by calling abort() internally
   //Eigen::PartialPivLU< Eigen::Ref<mat> > qr(mat4);
-  Eigen::HouseholderQR< Eigen::Ref<mat> > qr(mat1);
-  mat1.triangularView<Eigen::StrictlyLower>().setZero();
+  now = DWT->CYCCNT;
+  //Eigen::HouseholderQR< Eigen::Ref<matq> > qr(mat_qr);
+  qr_decomp_tria<MSIZE>(mat_qr.data());
+  diff2 = DWT->CYCCNT - now;
+  //mat_qr.triangularView<Eigen::StrictlyLower>().setZero();
 
   while(1)
   {
