@@ -22,12 +22,12 @@ int main()
   DWT->CYCCNT = 0;
   DWT->CTRL |= (1UL << DWT_CTRL_CYCCNTENA_Pos);
 
-  mat1.setOnes();
-  mat1 += mat::Identity();
+  mat1.setIdentity();
+  mat1.array() += 1;
   mat2.setOnes();
 
-  mat_qr.block<MSIZE, MSIZE>(0,0).setOnes();
-  mat_qr.block<MSIZE, MSIZE>(0,0) += mat::Identity();
+  mat_qr.block<MSIZE, MSIZE>(0,0).setIdentity();
+  mat_qr.block<MSIZE, MSIZE>(0,0).array() += 1;
   mat_qr.block<MSIZE, MSIZE>(MSIZE,0).setIdentity();
 
   size_t now = DWT->CYCCNT;
