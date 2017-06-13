@@ -124,13 +124,13 @@ inline void qr_decomp_tria(T *a)
  * Eigen interface
  */
 template <int m, int n, typename T>
-inline void qr_decomp(Eigen::Matrix<T, m, n> &a)
+inline void qr_inplace(Eigen::Matrix<T, m, n> &a)
 {
   qr_decomp<m, n, T>(a.data());
 }
 
 template <int m, int n, typename T>
-inline void qr_decomp_tria(Eigen::Matrix<T, m, n> &a)
+inline void qr_triangular_inplace(Eigen::Matrix<T, m, n> &a)
 {
   static_assert(m == 2*n, "There must be 2x number of rows as columns");
 
