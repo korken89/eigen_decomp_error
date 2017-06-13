@@ -66,7 +66,7 @@ int main()
   //Eigen::HouseholderQR< Eigen::Ref<matq> > qr(mat_qr);
   qr_decomp_tria(mat_qr);
   diff2 = DWT->CYCCNT - now;
-  //mat_qr.triangularView<Eigen::StrictlyLower>().setZero();
+  mat_qr.triangularView<Eigen::StrictlyLower>().setZero();
 
   while(1)
   {
