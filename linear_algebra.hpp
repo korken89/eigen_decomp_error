@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <Eigen/Dense>
 
 #define COL_MAJOR
 
@@ -25,23 +26,24 @@
  * @param[in] n         Number of columns in matrix.
  * @return              Returns the upper triangular matrix R in the top of A.
  */
-template <int m, int n>
-inline void qr_decomp(float *a)
+template <int m, int n, typename T>
+inline void qr_decomp(T *a)
 {
     int i, j, k;
-    float norm, sigma, sum, tau, u1, u2;
+    T sum;
 
     // Loop over every column
     for (k = 0; k < n; k++)
     {
         // Calculate the norm of the vector
-        for (j = k, sum = 0.0f; j < m; j++)
+        for (j = k, sum = T(0); j < m; j++)
             sum += A(j, k) * A(j, k);
 
-        norm = std::sqrt(sum);
-        sigma = SIGN(norm, A(k, k));
-        u1 = A(k, k) + sigma;
-        u2 = 1.0f / u1;
+        const T norm = std::sqrt(sum);
+        const T sigma = SIGN(norm, A(k, k));
+        const T u1 = A(k, k) + sigma;
+        const T u2 = T(1) / u1;
+        const T tau = u1 / sigma;
 
         // Find Hk and Hk * A
 
@@ -49,7 +51,6 @@ inline void qr_decomp(float *a)
             A(j, k) *= u2;
 
         A(k, k) = -sigma;
-        tau = u1 / sigma;
 
         for (j = k + 1; j < n; j++)
         {
@@ -63,6 +64,7 @@ inline void qr_decomp(float *a)
         }
     }
 }
+
 
 /*
  * @brief               Optimized QR Decomposition of matrices where m = 2n and
@@ -117,3 +119,20 @@ inline void qr_decomp_tria(T *a)
     }
 }
 
+
+/*
+ * Eigen interface
+ */
+template <int m, int n, typename T>
+inline void qr_decomp(Eigen::Matrix<T, m, n> &a)
+{
+  qr_decomp<m, n, T>(a.data());
+}
+
+template <int m, int n, typename T>
+inline void qr_decomp_tria(Eigen::Matrix<T, m, n> &a)
+{
+  static_assert(m == 2*n, "There must be 2x number of rows as columns");
+
+  qr_decomp_tria<n, T>(a.data());
+}
